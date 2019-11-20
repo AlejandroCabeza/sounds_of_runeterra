@@ -1,2 +1,2 @@
-google-cloud-speech==1.2.0
+simpleaudio==1.0.2
 aiohttp[speedups]==3.6.2
