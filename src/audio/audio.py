@@ -1,8 +1,14 @@
-import simpleaudio
+# Python Imports
 import asyncio
 from io import BytesIO
+# Third-Party Imports
+import simpleaudio
+# Project Imports
+
+
 class AudioPlayer(object):
-    def __init__(self, num_channels = 1, bytes_per_sample=2, sample_rate=24000):
+
+    def __init__(self, num_channels=1, bytes_per_sample=2, sample_rate=24000):
         self.lock = asyncio.locks.Lock()
         self.current = None
         self.stop_play = False
@@ -58,7 +64,7 @@ if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(tasks)
     assert player.queue.full()
     audio_task = player.queue.get_nowait()
-    assert  audio_task[0] == 3
+    assert audio_task[0] == 3
     assert player.queue.empty()
     player.queue.put_nowait(audio_task)
 
@@ -67,8 +73,3 @@ if __name__ == "__main__":
         await player.stop()
 
     asyncio.get_event_loop().run_until_complete(asyncio.gather(test1(), player.play()))
-
-
-
-
-
