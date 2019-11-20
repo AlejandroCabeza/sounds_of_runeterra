@@ -5,10 +5,13 @@ from enum import Enum
 
 
 class BaseEnum(Enum):
-
     @classmethod
     def get_state_from_string(cls, string: str):
-        return cls[string]
+        try:
+            return cls[string]
+        except KeyError:
+            return None
+
 
 
 class GameStates(BaseEnum):

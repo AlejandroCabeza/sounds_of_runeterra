@@ -30,46 +30,46 @@ async def get_game_state() -> dict:
     return GameStates.get_state_from_string(json.get("GameState"))
 
 
-def get_screen_size() -> dict:
+async def get_screen_size() -> dict:
     json: dict = await API_CLIENT.fetch_positional_rectangles()
     return json.get("Screen")
 
 
-def get_rectangles() -> [{}]:
+async def get_rectangles() -> [{}]:
     json: dict = await API_CLIENT.fetch_positional_rectangles()
     return json.get("Rectangles")
 
 
 # EXPEDITIONS
-def get_expedition_is_active() -> bool:
+async def get_expedition_is_active() -> bool:
     json: dict = await API_CLIENT.fetch_expeditions_state()
     return json.get("IsActive")
 
 
-def get_expedition_state() -> ExpeditionStates:
+async def get_expedition_state() -> ExpeditionStates:
     json: dict = await API_CLIENT.fetch_expeditions_state()
     return ExpeditionStates.get_state_from_string(json.get("State"))
 
 
-def get_expedition_record() -> [str]:
+async def get_expedition_record() -> [str]:
     json: dict = await API_CLIENT.fetch_expeditions_state()
     return json.get("Record")
 
 
-def get_expedition_draft_picks() -> []:
+async def get_expedition_draft_picks() -> []:
     raise NotImplemented
 
 
-def get_expedition_deck() -> [str]:
+async def get_expedition_deck() -> [str]:
     json: dict = await API_CLIENT.fetch_expeditions_state()
     return json.get("Deck")
 
 
-def get_expedition_games():
+async def get_expedition_games():
     json: dict = await API_CLIENT.fetch_expeditions_state()
     return {key: json.get(key) for key in ("Games", "Wins", "Losses")}
 
 
 # GAME RESULT
-def get_game_result():
-    return API_CLIENT.fetch_game_result()
+async def get_game_result():
+    return await API_CLIENT.fetch_game_result()
