@@ -53,7 +53,7 @@ class AudioPlayer(object):
 
 if __name__ == "__main__":
     player = AudioPlayer(num_channels=1, bytes_per_sample=2, sample_rate=44100)
-    with open("test.wav", "rb") as f:
+    with open("../test.wav", "rb") as f:
         audio = f.read()
     buff = BytesIO(audio).getbuffer()
     tasks = asyncio.gather(
