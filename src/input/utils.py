@@ -2,15 +2,21 @@
 from msvcrt import getch
 # Third-Party Imports
 # Project Imports
-from input.config import KEY_CODE_ENTER, KEY_CODE_SPACE
+from input.config import Key
 
 
 def get_keyboard_input_as_integer():
-    return ord(getch())
+    key_code = ord(getch())
+    try:
+        return Key(key_code)
+    except ValueError:
+        return None
 
 
-async def _parse_keyboard_inputs(key_code: int):
-    if key_code is KEY_CODE_ENTER:
-        print("ENTER")
-    elif key_code is KEY_CODE_SPACE:
-        print("SPACE")
+async def _parse_keyboard_inputs(key_code: Key):
+    callbacks = {
+        Key.ENTER : lambda *args, **kwargs: print("ENTER"),
+        Key.SPACE: lambda *args, **kwargs: print("SPACE")
+    }
+    f = callbacks.get(key_code, lambda *args, **kwargs: print("Unrecognized key"))
+    f()

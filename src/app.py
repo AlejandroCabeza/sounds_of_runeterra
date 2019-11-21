@@ -7,7 +7,7 @@ from io import BytesIO
 from audio.audio import AudioPlayer
 from tts.gtts import synthesize_text
 from cards.wrapper_cards import create_cards
-from api.data_structures.states import GameStates
+from api.data_structures.states import GameState
 from api.services import get_game_state, get_player_names, get_game_result
 
 
@@ -23,9 +23,9 @@ class App:
 
     async def loop(self):
         print("Checking game state")
-        state = await get_game_state()
-        while state != GameStates.InProgress:
-            state: GameStates = await get_game_state()
+        state: GameState = await get_game_state()
+        while state != GameState.InProgress:
+            state = await get_game_state()
             print(str(state))
             await asyncio.sleep(1)
         print("Reading players names")
@@ -38,10 +38,10 @@ class App:
         await self.player.add_audio_buffer(time.time(), BytesIO(player_name_audio).getbuffer())
         await asyncio.sleep(3)
 
-        while state == GameStates.InProgress:
+        while state == GameState.InProgress:
             await asyncio.sleep(2)
             print("Checking for finished game")
-            state: GameStates = await get_game_state()
+            state: GameState = await get_game_state()
 
         print("Game finished")
 
