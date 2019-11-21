@@ -1,4 +1,7 @@
+# Python Imports
+# Third-Party Imports
 from google.cloud import texttospeech as tts
+# Project Imports
 
 
 def synthesize_text(text, lang):

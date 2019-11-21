@@ -1,8 +1,8 @@
 # Python Imports
 # Third-Party Imports
 # Project Imports
-from src.api.clients.api_client import ApiClient
-from data_structures.states import GameStates, ExpeditionStates
+from api.clients.api_client import ApiClient
+from api.data_structures.states import GameState, ExpeditionState
 
 
 API_CLIENT: ApiClient = ApiClient()
@@ -25,9 +25,9 @@ async def get_player_names() -> dict:
     return {key: json.get(key) for key in ("PlayerName", "OpponentName")}
 
 
-async def get_game_state() -> GameStates:
+async def get_game_state() -> GameState:
     json: dict = await API_CLIENT.fetch_positional_rectangles()
-    return GameStates.get_state_from_string(json.get("GameState"))
+    return GameState(json.get("GameState"))
 
 
 async def get_screen_size() -> dict:
@@ -46,9 +46,9 @@ async def get_expedition_is_active() -> bool:
     return json.get("IsActive")
 
 
-async def get_expedition_state() -> ExpeditionStates:
+async def get_expedition_state() -> ExpeditionState:
     json: dict = await API_CLIENT.fetch_expeditions_state()
-    return ExpeditionStates.get_state_from_string(json.get("State"))
+    return ExpeditionState.get_state_from_string(json.get("State"))
 
 
 async def get_expedition_record() -> [str]:
