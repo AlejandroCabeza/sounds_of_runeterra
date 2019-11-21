@@ -25,7 +25,7 @@ async def get_player_names() -> dict:
     return {key: json.get(key) for key in ("PlayerName", "OpponentName")}
 
 
-async def get_game_state() -> dict:
+async def get_game_state() -> GameStates:
     json: dict = await API_CLIENT.fetch_positional_rectangles()
     return GameStates.get_state_from_string(json.get("GameState"))
 

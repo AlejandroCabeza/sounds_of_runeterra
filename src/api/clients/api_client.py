@@ -22,7 +22,7 @@ class ApiClient:
         return await self._http_client.fetch_as_json(ENDPOINT_POSITIONAL_RECTANGLES)
 
     async def fetch_expeditions_state(self):
-        return await self._http_client.fetch_as_json(ENDPOINT_GAME_RESULT)
+        return await self._http_client.fetch_as_json(ENDPOINT_EXPEDITIONS_STATE)
 
     async def fetch_game_result(self):
-        return await self._http_client.fetch_as_json(ENDPOINT_EXPEDITIONS_STATE)
+        return await self._http_client.fetch_as_json(ENDPOINT_GAME_RESULT)
