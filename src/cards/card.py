@@ -25,8 +25,8 @@ class Card:
         string: str = f"{self.name}."
 
         if self.type == "Spell":
-            string += f" Costs {self.cost} mana."
+            string += f" Costs {self.cost}."
         else:
-            string += f" {self.attack} {self.health} by {self.cost}"
+            string += f" {self.attack} {self.health} by {self.cost}."
 
         return string
