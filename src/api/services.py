@@ -30,9 +30,10 @@ async def get_game_state() -> GameState:
     return GameState(json.get("GameState"))
 
 
-async def get_screen_size() -> dict:
+async def get_screen_size() -> (int, int):
     json: dict = await API_CLIENT.fetch_positional_rectangles()
-    return json.get("Screen")
+    screen: dict = json.get("Screen")
+    return screen.get("ScreenWidth"), screen.get("ScreenHeight")
 
 
 async def get_rectangles() -> [{}]:

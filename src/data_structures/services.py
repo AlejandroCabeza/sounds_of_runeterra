@@ -23,3 +23,10 @@ def get_id_of_rectangle_hovered_by_mouse(mouse_position: (int, int), rectangles:
         if rectangle.is_position_inside_rectangle(mouse_x, mouse_y):
             return rectangle.rectangle_code
     return None
+
+def get_id_of_rectangle_in_y_coord(y_coord: int, rectangles: [Rectangle]) -> [str]:
+    return (
+        rectangle.rectangle_code
+        for rectangle in rectangles
+        if rectangle.is_position_inside_rectangle((rectangle.top_x+rectangle.width)//2, y_coord)
+    )
