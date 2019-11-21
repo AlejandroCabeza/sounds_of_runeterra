@@ -3,7 +3,7 @@ import asyncio
 # Third-Party Imports
 # Project Imports
 from audio.audio import AudioPlayer
-from cards.wrapper_cards import create_cards
+from cards.utils import create_cards_dictionary
 from data_structures import services as data_structure_services
 from api.services import get_game_state, get_player_names, get_game_result
 from data_structures.states import GameState
@@ -19,7 +19,7 @@ class App:
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../creds.json"
 
         print("Initialising required data")
-        self.cards = create_cards("../cards_field.json", "../cards_data.json")
+        self.cards_dictionary = create_cards_dictionary("../cards_field.json", "../cards_data.json")
         self.audio_player = AudioPlayer()
         self.input_manager = InputManager(asyncio.get_event_loop(), self)
         self.text_to_speech_client = TextToSpeechClient()
@@ -97,7 +97,6 @@ class App:
         audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io("Exiting application.")
         await self.audio_player.add_audio_buffer(audio.getbuffer())
         print("Exiting...")
-        await asyncio.sleep(2)
 
 
 if __name__ == '__main__':
