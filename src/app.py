@@ -21,13 +21,17 @@ class App:
         print("Initialising required data")
         self.cards = create_cards("../cards_field.json", "../cards_data.json")
         self.audio_player = AudioPlayer()
-        self.input_manager = InputManager(asyncio.get_event_loop())
+        self.input_manager = InputManager(asyncio.get_event_loop(), self)
         self.text_to_speech_client = TextToSpeechClient()
         self.flag_stop: bool = False
 
     def run(self):
         print("Running...")
-        asyncio.get_event_loop().run_until_complete(asyncio.gather(self.loop(), self.audio_player.play()))
+        self.input_manager.start_keyboard_listener()
+        asyncio.get_event_loop().run_until_complete(asyncio.gather(
+            self.loop(),
+            self.audio_player.play(),
+        ))
 
     async def loop(self):
         while not self.flag_stop:

@@ -1,51 +1,49 @@
 # Python Imports
 import asyncio
 # Third-Party Imports
+from pynput import keyboard
+from pynput.keyboard import Key
 from pynput.mouse import Controller
 # Project Imports
-from input.config import Key
-from input.utils import get_keyboard_input_as_integer, _parse_keyboard_inputs
+
 
 
 class InputManager:
 
-    def __init__(self, event_loop):
+    def __init__(self, event_loop, app):
         self.lock = asyncio.locks.Lock()
         self.is_running: bool = False
         self.flag_stop: bool = False
         self.queue: asyncio.Queue = asyncio.Queue(1)
         self.mouse = Controller()
-        event_loop.run_in_executor(None, self._listen_keyboard)
+        self.keyboard_listener = keyboard.Listener(on_press=self._parse_keyboard_press)
 
-    def _listen_keyboard(self):
-        while not self.flag_stop:
-            if self.queue.empty():
-                keyboard_input: Key = Key(get_keyboard_input_as_integer())
-                if keyboard_input in (Key.ENTER, Key.SPACE):
-                    self.queue.put_nowait(keyboard_input)
+    def start_keyboard_listener(self):
+        self.keyboard_listener.start()
 
-    async def read_keyboard_inputs(self):
-        async with self.lock:
-            assert not self.is_running
-            self.is_running = True
-        while not self.flag_stop:
-            async with self.lock:
-                if self.queue.full():
-                    key_code = await self.queue.get()
-                    await _parse_keyboard_inputs(key_code)
-            await asyncio.sleep(1)
-
-    async def get_keyboard_input(self):
-        async with self.lock:
-            if self.queue.full():
-                return await self.queue.get()
-
-    async def get_mouse_position(self):
+    def get_mouse_position(self):
         return self.mouse.position
 
     async def stop(self):
         async with self.lock:
             self.flag_stop = True
+            self.keyboard_listener.stop()
+
+    def _parse_keyboard_press(self, key_code: Key):
+        callbacks = {
+            Key.enter: lambda *args, **kwargs: print("ENTER"),
+            Key.space: self.output_card_hovered_by_mouse  # lambda *args, **kwargs: print("SPACE")
+        }
+        f = callbacks.get(key_code, lambda *args, **kwargs: print("Unrecognized key"))
+        f()
+
+    def output_card_hovered_by_mouse(self):
+        mouse_position = self.get_mouse_position()
+        card_code = self.get_card_hovered_by_mouse(mouse_position)
+        print(card_code)
+
+    def get_card_hovered_by_mouse(self, mouse_position):
+        print(mouse_position)
 
 
 if __name__ == '__main__':
