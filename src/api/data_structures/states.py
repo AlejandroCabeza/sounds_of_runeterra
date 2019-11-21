@@ -12,6 +12,14 @@ class BaseEnum(Enum):
         except KeyError:
             return None
 
+    # Overloading the __eq__ operator was necessary due to o possible bug occurring
+    # when comparing two enums with the same value.
+    # Enums are compared by identity and comparing two enums with the same enum value returned false.
+    def __eq__(self, other):
+        try:
+            return self.value == other.value
+        except AttributeError:
+            return False
 
 
 class GameStates(BaseEnum):
