@@ -6,8 +6,8 @@ from io import BytesIO
 # Project Imports
 from audio.audio import AudioPlayer
 from tts.gtts import synthesize_text
+from data_structures.states import GameState
 from cards.wrapper_cards import create_cards
-from api.data_structures.states import GameState
 from api.services import get_game_state, get_player_names, get_game_result
 
 

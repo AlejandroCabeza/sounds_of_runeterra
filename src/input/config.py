@@ -3,6 +3,7 @@ import enum
 # Third-Party Imports
 # Project Imports
 
+
 class Key(enum.Enum):
     ENTER: int = 13
     SPACE: int = 32

@@ -15,7 +15,7 @@ def get_keyboard_input_as_integer():
 
 async def _parse_keyboard_inputs(key_code: Key):
     callbacks = {
-        Key.ENTER : lambda *args, **kwargs: print("ENTER"),
+        Key.ENTER: lambda *args, **kwargs: print("ENTER"),
         Key.SPACE: lambda *args, **kwargs: print("SPACE")
     }
     f = callbacks.get(key_code, lambda *args, **kwargs: print("Unrecognized key"))

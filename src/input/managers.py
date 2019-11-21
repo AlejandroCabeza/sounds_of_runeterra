@@ -48,8 +48,9 @@ class InputManager:
 
 
 if __name__ == '__main__':
-    event_loop =  asyncio.get_event_loop()
+    event_loop = asyncio.get_event_loop()
     input_manager = InputManager(asyncio.get_event_loop())
+
     async def t1():
         while True:
             mouse_pos = await input_manager.get_mouse_position()
