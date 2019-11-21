@@ -27,7 +27,7 @@ class App:
 
     def run(self):
         print("Running...")
-        self.input_manager.start_keyboard_listener()
+        self.input_manager.start()
         asyncio.get_event_loop().run_until_complete(asyncio.gather(
             self.loop(),
             self.audio_player.play(),
