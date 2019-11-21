@@ -32,13 +32,10 @@ class AudioPlayer(object):
 
     async def play(self):
         async with self.lock:
-            if self.is_running:
-                return
+            assert not self.is_running
             self.is_running = True
-        while True:
+        while not self.stop_play:
             async with self.lock:
-                if self.stop_play:
-                    break
                 if self.queue.full():
                     if self.current is not None:
                         self.current.stop()
