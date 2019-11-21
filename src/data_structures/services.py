@@ -2,6 +2,7 @@
 # Third-Party Imports
 # Project Imports
 from data_structures.states import GameState
+from data_structures.rectangles import Rectangle
 
 
 def is_game_state_in_progress(game_state: GameState):
@@ -14,3 +15,11 @@ def is_game_state_in_menus(game_state: GameState):
 
 def is_game_state_in_transition(game_state: GameState):
     return game_state == GameState.Transition
+
+
+def get_id_of_rectangle_hovered_by_mouse(mouse_position: (int, int), rectangles: [Rectangle]):
+    mouse_x, mouse_y = mouse_position
+    for rectangle in rectangles:
+        if rectangle.is_position_inside_rectangle(mouse_x, mouse_y):
+            return rectangle.rectangle_code
+    return None
