@@ -1,5 +1,6 @@
 # Python Imports
 import asyncio
+import time
 from io import BytesIO
 # Third-Party Imports
 import simpleaudio
@@ -16,7 +17,7 @@ class AudioPlayer(object):
         self.queue = asyncio.Queue(1)
         self.config = (num_channels, bytes_per_sample, sample_rate)
 
-    async def add_audio_buffer(self, time_stamp, new_audio_buffer):
+    async def add_audio_buffer(self, new_audio_buffer, time_stamp=time.time()):
         if self.queue.full():
             current_waiting = (current_t, current_) = await self.queue.get()
             if current_t > time_stamp:
