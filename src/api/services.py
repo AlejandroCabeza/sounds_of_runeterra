@@ -2,7 +2,7 @@
 # Third-Party Imports
 # Project Imports
 from src.api.clients.api_client import ApiClient
-from src.api.data_structures.states import GameStates, ExpeditionStates
+from data_structures.states import GameStates, ExpeditionStates
 
 
 API_CLIENT: ApiClient = ApiClient()
