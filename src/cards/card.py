@@ -1,4 +1,5 @@
 from typing import Dict, Any
+import json
 
 
 class Card(object):
@@ -6,13 +7,13 @@ class Card(object):
     def __init__(self, fields: Dict[str, Any], verbosity: bool = False):
         self._data = fields
         self._verbosity = verbosity
-        self.__dict__.update(fields)
 
     async def get_data(self):
+        """
+        We can make any improvement to read the type and avoid returning
+         attack and health if the type isn´t a unit or if it has attack and health to 0
+        """
         if self._verbosity:
-            return (f"{str(self._data)}")
+            return f"{json.dumps(self._data)}"
         else:
-
-        return (f"{self._name}. {self._type}. Cost: {self._cost}. "
-                f"{'Attack': {self._attack}'|'{self._health} if self._type == 'Unit' else ''}"
-                f"{self._description}")
+            return f"{list(self._data.values())}"

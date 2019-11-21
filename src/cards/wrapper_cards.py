@@ -12,10 +12,11 @@ def get_fields(path):
         return json.load(json_card_fields)
 
 
-def create_cards(verbosity = False):
+def create_cards(verbosity=False):
     cards = {}
     key, fields = get_fields("../cards_field.json").values()
     for data in get_all_cards("../cards_data.json"):
-        cards[data[key]] = Card({k: data.get(k, None) for k in fields}, verbosity)
+        cards[data[key]] = Card({v: data.get(k, None) for k, v in fields.items()},
+                                verbosity)
 
     return cards
