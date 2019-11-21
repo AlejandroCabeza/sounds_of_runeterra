@@ -6,6 +6,15 @@ from audio.audio import AudioPlayer
 from cards.utils import create_cards_dictionary
 from cards.services import get_card_in_position, get_cards_in_field_by_y_coord
 from cards.card import Card
+from config import (
+    CARDS_MESSAGES,
+    CARDS_MESSAGES_PLAYER_PLAYED,
+    CARDS_MESSAGES_PLAYER_HAND,
+    CARDS_MESSAGES_PLAYER_BATTLEFIELD,
+    CARDS_MESSAGES_OPPONENT_BATTLEFIELD,
+    CARDS_MESSAGES_OPPONENT_PLAYED,
+    CARDS_MESSAGES_OPPONENT_HAND
+)
 from data_structures import services as data_structure_services
 from api.services import get_game_state, get_player_names, get_game_result, get_screen_size
 from data_structures.states import GameState
@@ -13,6 +22,7 @@ from input.managers import InputManager
 from text_to_speech.client import TextToSpeechClient
 from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis, get_fields_y_coords, Field
 from pynput.keyboard import Key
+from utils import generate_field_cards_message
 
 
 class App:
@@ -26,6 +36,16 @@ class App:
         self.flag_stop: bool = False
         self.lock = asyncio.locks.Lock()
         self.use_verbose_mode: bool = True
+        self.fields_coords: {} = None
+        self.match_events: [] = [
+            (Key.space, self.handle_mouse_over_card_event),
+            (Key.f1, self.generate_field_event(Field.PLAYER_HAND, CARDS_MESSAGES_PLAYER_HAND)),
+            (Key.f2, self.generate_field_event(Field.PLAYER_PLAYED, CARDS_MESSAGES_PLAYER_PLAYED)),
+            (Key.f3, self.generate_field_event(Field.PLAYER_BATTLEFIELD, CARDS_MESSAGES_PLAYER_BATTLEFIELD)),
+            (Key.f6, self.generate_field_event(Field.OPPONENT_HAND, CARDS_MESSAGES_OPPONENT_HAND)),
+            (Key.f5, self.generate_field_event(Field.OPPONENT_PLAYED, CARDS_MESSAGES_OPPONENT_PLAYED)),
+            (Key.f4, self.generate_field_event(Field.OPPONENT_BATTLEFIELD, CARDS_MESSAGES_OPPONENT_BATTLEFIELD)),
+        ]
 
     def run(self):
         print("Running...")
@@ -35,8 +55,14 @@ class App:
             self.audio_player.play(),
         ))
 
+    async def initialise_async_values(self):
+        if not self.fields_coords:
+            _, y_size = await get_screen_size()
+            self.fields_coords = get_fields_y_coords(y_size)
+        await self.input_manager.key_subscribe(Key.alt_r, self.handle_verbosity_level_switch_event)
+
     async def loop(self):
-        await self.input_manager.key_subscribe(Key.alt_l, self.handle_verbosity_level_switch_event)
+        await self.initialise_async_values()
         while not self.flag_stop:
             game_state: GameState = await get_game_state()
             await self.parse_game_state(game_state)
@@ -61,10 +87,7 @@ class App:
     async def game_state_in_progress_loop(self):
         print("Begin game")
         await self.play_player_names()
-        await self.input_manager.key_subscribe(Key.space, self.handle_mouse_over_card_event)
-        await self.input_manager.key_subscribe(Key.f1, self.handle_player_hand_cards_event)
-        await self.input_manager.key_subscribe(Key.f2, self.handle_player_played_cards_event)
-        await self.input_manager.key_subscribe(Key.f3, self.handle_opponent_played_cards_event)
+        await self.subscribe_match_events()
 
         while True:
             game_state: GameState = await get_game_state()
@@ -72,10 +95,7 @@ class App:
                 break
             await asyncio.sleep(1)
 
-        await self.input_manager.key_unsubscribe(Key.space, self.handle_mouse_over_card_event)
-        await self.input_manager.key_unsubscribe(Key.f1, self.handle_player_hand_cards_event)
-        await self.input_manager.key_unsubscribe(Key.f2, self.handle_player_played_cards_event)
-        await self.input_manager.key_unsubscribe(Key.f3, self.handle_opponent_played_cards_event)
+        await self.unsubscribe_match_events()
         await self.play_scores()
 
     async def play_player_names(self):
@@ -106,11 +126,30 @@ class App:
 
     async def _stop(self):
         print("Closing")
+        await self.input_manager.key_unsubscribe(Key.alt_r, self.handle_verbosity_level_switch_event)
         await self.audio_player.stop()
         await self.input_manager.stop()
         audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io("Exiting application.")
         await self.audio_player.add_audio_buffer(audio.getbuffer())
         print("Exiting...")
+
+    async def subscribe_match_events(self):
+        for key, event in self.match_events:
+            await self.input_manager.key_subscribe(key, event)
+
+    async def unsubscribe_match_events(self):
+        for key, event in self.match_events:
+            await self.input_manager.key_unsubscribe(key, event)
+
+    def generate_field_event(self, field, message_formatter: CARDS_MESSAGES):
+        async def handle_function(_: Key):
+            y_coord: int = self.fields_coords[field]
+            cards_generator = await get_cards_in_field_by_y_coord(y_coord, self.cards_dictionary)
+            message: str = generate_field_cards_message(message_formatter, list(cards_generator), self.use_verbose_mode)
+            async with self.lock:
+                audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(message)
+            await self.audio_player.add_audio_buffer(audio.getbuffer())
+        return handle_function
 
     async def handle_mouse_over_card_event(self, key: Key):
         print(str(key))
@@ -126,50 +165,6 @@ class App:
                     card.get_as_string(self.use_verbose_mode)
                 )
             await self.audio_player.add_audio_buffer(audio.getbuffer())
-
-    async def handle_player_hand_cards_event(self, key : Key):
-        if not self.fields_coords:
-            _, y_size = await get_screen_size()
-            self.fields_coords = get_fields_y_coords(y_size)
-        cards = await get_cards_in_field_by_y_coord(self.fields_coords[Field.PLAYER_HAND], self.cards_dictionary)
-        cards_message = "\n".join(card.get_as_string(self.use_verbose_mode) for card in cards)
-        full_message = f"The cards in player hand are: {cards_message}"
-        async with self.lock:
-            audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(full_message)
-        await self.audio_player.add_audio_buffer(audio.getbuffer())
-
-    async def handle_player_played_cards_event(self, key : Key):
-        if not self.fields_coords:
-            _, y_size = await get_screen_size()
-            self.fields_coords = get_fields_y_coords(y_size)
-        cards = await get_cards_in_field_by_y_coord(self.fields_coords[Field.PLAYER_PLAYED], self.cards_dictionary)
-        cards_message = "\n".join(card.get_as_string(self.use_verbose_mode) for card in cards)
-        full_message = f"The cards in player played are: {cards_message}"
-        async with self.lock:
-            audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(full_message)
-        await self.audio_player.add_audio_buffer(audio.getbuffer())
-
-    async def handle_opponent_hand_cards_event(self, key: Key):
-        if not self.fields_coords:
-            _, y_size = await get_screen_size()
-            self.fields_coords = get_fields_y_coords(y_size)
-        cards = await get_cards_in_field_by_y_coord(self.fields_coords[Field.OPPONENT_HAND], self.cards_dictionary)
-        cards_message = "\n".join(card.get_as_string(self.use_verbose_mode) for card in cards)
-        full_message = f"The cards in opponent hand are: {cards_message}"
-        async with self.lock:
-            audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(full_message)
-        await self.audio_player.add_audio_buffer(audio.getbuffer())
-
-    async def handle_opponent_played_cards_event(self, key: Key):
-        if not self.fields_coords:
-            _, y_size = await get_screen_size()
-            self.fields_coords = get_fields_y_coords(y_size)
-        cards = await get_cards_in_field_by_y_coord(self.fields_coords[Field.OPPONENT_PLAYED], self.cards_dictionary)
-        cards_message = "\n".join(card.get_as_string(self.use_verbose_mode) for card in cards)
-        full_message = f"The cards in opponent played are: {cards_message}"
-        async with self.lock:
-            audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(full_message)
-        await self.audio_player.add_audio_buffer(audio.getbuffer())
 
     async def handle_verbosity_level_switch_event(self, _: Key):
         async with self.lock:
