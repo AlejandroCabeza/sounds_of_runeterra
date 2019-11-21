@@ -1,0 +1,14 @@
+{
+  "key": "cardCode",
+  "values": {
+    "name":  "name",
+    "descriptionRaw":  "description",
+    "attack":  "attack",
+    "health":  "health",
+    "cost":  "cost",
+    "type":  "type",
+    "region":  "region",
+    "keywords": "skills"
+  },
+  "message" : "{name} from {region} of type {type}, {description}. Has {attack} attack points, {health} health points. It costs {cost} mana points"
+}
