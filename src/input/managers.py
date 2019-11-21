@@ -1,63 +1,74 @@
 # Python Imports
 import asyncio
+from collections import defaultdict
 # Third-Party Imports
-from pynput import keyboard
+from pynput import keyboard, mouse
 from pynput.keyboard import Key
-from pynput.mouse import Controller
 # Project Imports
-from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis
-
 
 class InputManager:
 
-    def __init__(self, event_loop, app):
+    def __init__(self, event_loop):
+        self.event_loop : asyncio.AbstractEventLoop = event_loop
         self.lock = asyncio.locks.Lock()
-        self.is_running: bool = False
-        self.flag_stop: bool = False
-        self.queue: asyncio.Queue = asyncio.Queue(1)
-        self.mouse = Controller()
-        self.keyboard_listener = keyboard.Listener(on_press=self._parse_keyboard_press)
+        self.is_running = False
+        self.mouse_listener = mouse.Listener(on_move=self._handle_mouse_move)
+        self.keyboard_listener = keyboard.Listener(on_press=self._handle_keyboard_press)
+        self._key_subscribed = defaultdict(list)
+        self._mouse_subscribed = []
 
-    def start_keyboard_listener(self):
+    def start(self):
         self.keyboard_listener.start()
+        self.mouse_listener.start()
+        self.is_running = True
 
-    def get_mouse_position(self):
-        top_left_mouse_position = self.mouse.position
-        return transform_mouse_position_to_bottom_left_coordinate_axis(top_left_mouse_position)
+    async def key_subscribe(self, key: Key, call_back):
+        async with self.lock:
+            self._key_subscribed[key].append(call_back)
+
+    async def mouse_subscribe(self, call_back):
+        async with self.lock:
+            self._mouse_subscribed.append(call_back)
 
     async def stop(self):
         async with self.lock:
-            self.flag_stop = True
-            self.keyboard_listener.stop()
+            if self.is_running:
+                self.keyboard_listener.stop()
+                self.mouse_listener.stop()
 
-    def _parse_keyboard_press(self, key_code: Key):
-        callbacks = {
-            Key.enter: lambda *args, **kwargs: print("ENTER"),
-            Key.space: self.output_card_hovered_by_mouse  # lambda *args, **kwargs: print("SPACE")
-        }
-        f = callbacks.get(key_code, lambda *args, **kwargs: print("Unrecognized key"))
-        f()
+    def _handle_keyboard_press(self, key: Key):
+        async def handle_key(_key : Key, subscribers):
+            async with self.lock:
+                for subscriber in subscribers:
+                    asyncio.run_coroutine_threadsafe(subscriber(_key), self.event_loop)
+        asyncio.run_coroutine_threadsafe(handle_key(key, self._key_subscribed[key]), self.event_loop)
 
-    def output_card_hovered_by_mouse(self):
-        mouse_position = self.get_mouse_position()
-        card_code = self.get_card_hovered_by_mouse(mouse_position)
-        print(card_code)
-
-    def get_card_hovered_by_mouse(self, mouse_position):
-        print(mouse_position)
+    def _handle_mouse_move(self, x, y):
+        async def handle_key(_x, _y ,subscribers):
+            async with self.lock:
+                for subscriber in subscribers:
+                    asyncio.run_coroutine_threadsafe(subscriber(_x, _y), self.event_loop)
+        asyncio.run_coroutine_threadsafe(handle_key(x, y , self._mouse_subscribed), self.event_loop)
 
 
 if __name__ == '__main__':
     event_loop = asyncio.get_event_loop()
-    input_manager = InputManager(asyncio.get_event_loop())
+    input_manager = InputManager(event_loop)
+    input_manager.start()
+
+    async def print_it(*args):
+        print(*(str(val) for val in args))
+
+    async def main():
+        await asyncio.sleep(10)
+        await input_manager.stop()
 
     async def t1():
-        while True:
-            mouse_pos = await input_manager.get_mouse_position()
-            print(mouse_pos)
-            await asyncio.sleep(1)
+        await input_manager.key_subscribe(Key.space, print_it)
+        await input_manager.key_subscribe(Key.enter, print_it)
+        await input_manager.mouse_subscribe(print_it)
 
     event_loop.run_until_complete(asyncio.gather(
-        input_manager.read_keyboard_inputs(),
-        t1()
+        t1(),
+        main(),
     ))
