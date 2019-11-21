@@ -8,6 +8,7 @@ from input.utils import get_keyboard_input_as_integer, _parse_keyboard_inputs
 
 
 class InputManager:
+
     def __init__(self, event_loop):
         self.lock = asyncio.locks.Lock()
         self.is_running: bool = False
