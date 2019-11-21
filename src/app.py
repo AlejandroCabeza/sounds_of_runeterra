@@ -4,24 +4,24 @@ import asyncio
 # Project Imports
 from audio.audio import AudioPlayer
 from cards.utils import create_cards_dictionary
+from cards.services import get_card_in_position
+from cards.card import Card
 from data_structures import services as data_structure_services
 from api.services import get_game_state, get_player_names, get_game_result
 from data_structures.states import GameState
 from input.managers import InputManager
 from text_to_speech.client import TextToSpeechClient
+from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis
+from pynput.keyboard import Key
 
 
 class App:
 
     def __init__(self):
-        print("Loading Credentials")
-        import os
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../creds.json"
-
-        print("Initialising required data")
+        self.evet_loop = asyncio.get_event_loop()
         self.cards_dictionary = create_cards_dictionary("../cards_field.json", "../cards_data.json")
         self.audio_player = AudioPlayer()
-        self.input_manager = InputManager(asyncio.get_event_loop())
+        self.input_manager = InputManager(self.evet_loop)
         self.text_to_speech_client = TextToSpeechClient()
         self.flag_stop: bool = False
 
@@ -59,11 +59,25 @@ class App:
         print("Begin game")
         await self.play_player_names()
 
+        async def handle_mouse_over_card(key):
+            print(str(key))
+            runaterra_pos = transform_mouse_position_to_bottom_left_coordinate_axis(self.input_manager.get_mouse_pos())
+            print(runaterra_pos)
+            card : Card = await get_card_in_position(runaterra_pos, self.cards_dictionary )
+            print(card)
+            if card is not None:
+                audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(card.get_as_string())
+                await self.audio_player.add_audio_buffer(audio.getbuffer())
+
+        await self.input_manager.key_subscribe(Key.space, handle_mouse_over_card)
+
         while True:
             game_state: GameState = await get_game_state()
             if not data_structure_services.is_game_state_in_progress(game_state):
                 break
+            await asyncio.sleep(1)
 
+        await self.input_manager.key_unsubscribe(Key.space, handle_mouse_over_card)
         await self.play_scores()
 
     async def play_player_names(self):
@@ -100,5 +114,9 @@ class App:
 
 
 if __name__ == '__main__':
+    print("Loading Credentials")
+    import os
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../cred.json"
+    print("Initialising required data")
     app = App()
     app.run()
