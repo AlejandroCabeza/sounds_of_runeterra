@@ -7,16 +7,15 @@ def get_all_cards(path):
         return json.load(json_card_file)
 
 
-def create_cards():
+def get_fields(path):
+    with open(path, "rb") as json_card_fields:
+        return json.load(json_card_fields)
+
+
+def create_cards(verbosity = False):
     cards = {}
+    key, fields = get_fields("../cards_field.json").values()
     for data in get_all_cards("../cards_data.json"):
-        cards[data["cardCode"]] = Card(data["name"],
-                                       data["descriptionRaw"],
-                                       data["attack"],
-                                       data["health"],
-                                       data["cost"],
-                                       data["type"],
-                                       data["region"],
-                                       data["keywords"])
+        cards[data[key]] = Card({k: data.get(k, None) for k in fields}, verbosity)
 
     return cards

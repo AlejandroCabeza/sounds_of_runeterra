@@ -1,0 +1,13 @@
+{
+  "key": "cardCode",
+  "values": {
+    "name":  "name",
+    "descriptionRaw":  "description",
+    "attack":  "attack",
+    "health":  "Health",
+    "cost":  "cost",
+    "type":  "type",
+    "region":  "region",
+    "keywords": "skills"
+  }
+}
