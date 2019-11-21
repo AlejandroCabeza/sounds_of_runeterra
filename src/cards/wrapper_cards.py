@@ -2,23 +2,23 @@ import json
 from src.cards.card import Card
 
 
-def get_all_cards(path):
+def read_json_file(path):
     with open(path, "rb") as json_card_file:
         return json.load(json_card_file)
 
 
-def get_cards_config(path):
-    with open(path, "rb") as json_card_fields:
-        return json.load(json_card_fields)
+def get_fields():
+    config = read_json_file("../../cards_field.json")
+    try:
+        return config["key"], config["values"], config["message"]
+    except KeyError as k:
+        raise KeyError("Key, Values and Message is mandatory")
 
 
 def create_cards():
+    code_key, fields, message = get_fields()
     cards = {}
-    config = get_cards_config("../../cards_field.json")
-    code_key = config["key"]
-    fields = config["values"]
-    message = config["message"]
-    for data in get_all_cards("../../cards_data.json"):
+    for data in read_json_file("../../cards_data.json"):
         cards[data[code_key]] = Card(
             {v: data.get(k, None) for k, v in fields.items()},
             message
