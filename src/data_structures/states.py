@@ -23,8 +23,15 @@ class BaseEnum(Enum):
 
 
 class GameStates(BaseEnum):
-    Menus = 0
-    InProgress = 1
+    Transition = 0
+    Menus = 1
+    InProgress = 2
+
+    @classmethod
+    def get_state_from_string(cls, string: str):
+        state = super().get_state_from_string(string)
+        if state is None:
+            return GameStates.Transition
 
 
 class ExpeditionStates(BaseEnum):
