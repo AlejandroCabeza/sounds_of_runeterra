@@ -4,10 +4,11 @@
     "name":  "name",
     "descriptionRaw":  "description",
     "attack":  "attack",
-    "health":  "Health",
+    "health":  "health",
     "cost":  "cost",
     "type":  "type",
     "region":  "region",
     "keywords": "skills"
-  }
+  },
+  "message" : "{name} from {region} of type {type}, {description}. Has {attack} attack points, {health} health points. It cost {cost} mana points"
 }
