@@ -5,7 +5,7 @@ from pynput import keyboard
 from pynput.keyboard import Key
 from pynput.mouse import Controller
 # Project Imports
-
+from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis
 
 
 class InputManager:
@@ -22,7 +22,8 @@ class InputManager:
         self.keyboard_listener.start()
 
     def get_mouse_position(self):
-        return self.mouse.position
+        top_left_mouse_position = self.mouse.position
+        return transform_mouse_position_to_bottom_left_coordinate_axis(top_left_mouse_position)
 
     async def stop(self):
         async with self.lock:
