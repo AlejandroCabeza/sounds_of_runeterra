@@ -21,7 +21,7 @@ class App:
         print("Initialising required data")
         self.cards_dictionary = create_cards_dictionary("../cards_field.json", "../cards_data.json")
         self.audio_player = AudioPlayer()
-        self.input_manager = InputManager(asyncio.get_event_loop(), self)
+        self.input_manager = InputManager(asyncio.get_event_loop())
         self.text_to_speech_client = TextToSpeechClient()
         self.flag_stop: bool = False
 
