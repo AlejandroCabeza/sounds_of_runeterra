@@ -18,12 +18,14 @@ from pynput.keyboard import Key
 class App:
 
     def __init__(self):
-        self.evet_loop = asyncio.get_event_loop()
+        self.event_loop = asyncio.get_event_loop()
         self.cards_dictionary = create_cards_dictionary("../cards_field.json", "../cards_data.json")
         self.audio_player = AudioPlayer()
-        self.input_manager = InputManager(self.evet_loop)
+        self.input_manager = InputManager(self.event_loop)
         self.text_to_speech_client = TextToSpeechClient()
         self.flag_stop: bool = False
+        self.lock = asyncio.locks.Lock()
+        self.use_verbose_mode: bool = True
 
     def run(self):
         print("Running...")
@@ -34,6 +36,7 @@ class App:
         ))
 
     async def loop(self):
+        await self.input_manager.key_subscribe(Key.f1, self.handle_verbosity_level_switch_event)
         while not self.flag_stop:
             game_state: GameState = await get_game_state()
             await self.parse_game_state(game_state)
@@ -58,18 +61,7 @@ class App:
     async def game_state_in_progress_loop(self):
         print("Begin game")
         await self.play_player_names()
-
-        async def handle_mouse_over_card(key):
-            print(str(key))
-            runaterra_pos = transform_mouse_position_to_bottom_left_coordinate_axis(self.input_manager.get_mouse_pos())
-            print(runaterra_pos)
-            card : Card = await get_card_in_position(runaterra_pos, self.cards_dictionary )
-            print(card)
-            if card is not None:
-                audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(card.get_as_string())
-                await self.audio_player.add_audio_buffer(audio.getbuffer())
-
-        await self.input_manager.key_subscribe(Key.space, handle_mouse_over_card)
+        await self.input_manager.key_subscribe(Key.space, self.handle_mouse_over_card_event)
 
         while True:
             game_state: GameState = await get_game_state()
@@ -77,22 +69,24 @@ class App:
                 break
             await asyncio.sleep(1)
 
-        await self.input_manager.key_unsubscribe(Key.space, handle_mouse_over_card)
+        await self.input_manager.key_unsubscribe(Key.space, self.handle_mouse_over_card_event)
         await self.play_scores()
 
     async def play_player_names(self):
         print("Playing player names")
-        audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(await self.get_player_names_as_text())
+        audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(
+            await self.get_player_names_as_text()
+        )
         await self.audio_player.add_audio_buffer(audio.getbuffer())
 
     async def get_player_names_as_text(self):
         players = await get_player_names()
         player_1, player_2 = players.values()
-        return f"{player_1} vs {player_2}"
+        return f"{player_1} vs {player_2}."
 
     async def play_scores(self):
         print("Playing scores")
-        text: str = f"Game result: {await self.get_game_result_as_text()}"
+        text: str = f"Game result: {await self.get_game_result_as_text()}."
         audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(text)
         await self.audio_player.add_audio_buffer(audio.getbuffer())
 
@@ -111,6 +105,25 @@ class App:
         audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io("Exiting application.")
         await self.audio_player.add_audio_buffer(audio.getbuffer())
         print("Exiting...")
+
+    async def handle_mouse_over_card_event(self, key: Key):
+        print(str(key))
+        runeterra_mouse_pos = transform_mouse_position_to_bottom_left_coordinate_axis(
+            self.input_manager.get_mouse_pos()
+        )
+        print(runeterra_mouse_pos)
+        card: Card = await get_card_in_position(runeterra_mouse_pos, self.cards_dictionary)
+        print(card)
+        if card is not None:
+            async with self.lock:
+                audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(
+                    card.get_as_string(self.use_verbose_mode)
+                )
+            await self.audio_player.add_audio_buffer(audio.getbuffer())
+
+    async def handle_verbosity_level_switch_event(self, _: Key):
+        async with self.lock:
+            self.use_verbose_mode = not self.use_verbose_mode
 
 
 if __name__ == '__main__':
