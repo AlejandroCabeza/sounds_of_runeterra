@@ -4,16 +4,29 @@ from typing import Dict, Any
 # Project Imports
 
 
-class Card(object):
+class Card:
 
     def __init__(self, fields: Dict[str, Any], verbose_msg: str):
-        self._data = fields
-        self._message = verbose_msg
+        self.__dict__ = fields
+        self._verbose_message_format = verbose_msg
 
-    def get_data(self, verbose=False):
+    def get_as_string(self, verbose: bool = False):
         if verbose:
-            return self._message.format(**{k: str(v) if v is not None else "" for k, v in self._data.items()})
-        return "\n".join(f"{attr}  {value}" for attr, value in self._data.items())
+            return self._get_as_string_verbose()
+        else:
+            return self._get_as_string_concise()
 
-    def __repr__(self):
-        return self._data.__repr__()
+    def _get_as_string_verbose(self):
+        return self._verbose_message_format.format(
+            **{k: str(v) if v is not None else "" for k, v in self.__dict__.items()}
+        )
+
+    def _get_as_string_concise(self):
+        string: str = f"{self.name}."
+
+        if self.type == "Spell":
+            string += f" Costs {self.cost} mana."
+        else:
+            string += f" {self.attack}-{self.health} by {self.cost}"
+
+        return string

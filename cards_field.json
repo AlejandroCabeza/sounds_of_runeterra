@@ -10,5 +10,5 @@
     "region":  "region",
     "keywords": "skills"
   },
-  "message" : "{name} from {region} of type {type}, {description}. Has {attack} attack points, {health} health points. It costs {cost} mana points"
+  "message" : "{name}, {type} from {region}: {description} Has {attack} attack points, {health} health points and costs {cost} mana."
 }
