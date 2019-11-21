@@ -2,6 +2,7 @@
 # Third-Party Imports
 # Project Imports
 from api.clients.api_client import ApiClient
+from api.utils import format_cards_from_rectangles
 from data_structures.states import GameState, ExpeditionState
 
 API_CLIENT: ApiClient = ApiClient()
@@ -37,6 +38,16 @@ async def get_screen_size() -> dict:
 async def get_rectangles() -> [{}]:
     json: dict = await API_CLIENT.fetch_positional_rectangles()
     return json.get("Rectangles")
+
+
+async def get_cards():
+    rectangles: [{}] = await get_rectangles()
+    return (item for item in rectangles if item["CardCode"] != "face")
+
+
+async def get_cards_formatted() -> [{}]:
+    cards: [{dict}] = await get_cards()
+    return format_cards_from_rectangles(cards)
 
 
 # EXPEDITIONS
