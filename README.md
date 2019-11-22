@@ -28,4 +28,4 @@ Right now it has some fixed command keys:
 
 [python_download_url]: https://www.python.org/downloads/release/python-375/
 
-#### [Video demo]()
+#### [Video demo](https://youtu.be/9tGsf3Vt2Ns)
