@@ -1,8 +1,8 @@
 # Python Imports
 # Third-Party Imports
 # Project Imports
-from src.cards.card import Card
-from src.utils import read_json_file_as_dict
+from cards.card import Card
+from utils import read_json_file_as_dict
 
 
 def get_card_fields(filepath: str):
@@ -25,12 +25,3 @@ def create_cards_dictionary(card_fields_filepath: str, cards_data_filepath: str)
         )
         for card in cards_as_dict
     }
-
-
-if __name__ == "__main__":
-    cards = list(create_cards_dictionary(
-        "../../resources/cards_field.json",
-        "../../resources/cards_data.json"
-    ).values())
-    print(cards[17].get_as_string(verbose=False))
-    print(cards[17].get_as_string(verbose=True))

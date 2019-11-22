@@ -3,7 +3,7 @@ import json
 # Third-Party Imports
 import aiohttp
 # Project Imports
-from src.api.clients.http_config import DEFAULT_IP, DEFAULT_PORT
+from api.clients.http_config import DEFAULT_IP, DEFAULT_PORT
 
 
 class HttpClient:

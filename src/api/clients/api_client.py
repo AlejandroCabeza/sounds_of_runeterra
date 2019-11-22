@@ -1,8 +1,8 @@
 # Python Imports
 # Third-Party Imports
 # Project Imports
-from src.api.clients.http_client import HttpClient
-from src.api.clients.api_config import (
+from api.clients.http_client import HttpClient
+from api.clients.api_config import (
     ENDPOINT_STATIC_DECKLIST,
     ENDPOINT_POSITIONAL_RECTANGLES,
     ENDPOINT_GAME_RESULT,
