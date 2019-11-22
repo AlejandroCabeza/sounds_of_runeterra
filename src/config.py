@@ -1,7 +1,14 @@
 # Python Imports
+import pathlib
+import os
 # Third-Party Imports
 # Project Imports
 from collections import namedtuple
+
+
+FILEPATH_GC_CRED: str = os.path.abspath(os.path.join(__file__, "../../resources/cred.json"))
+FILEPATH_CARD_FIELDS: str = os.path.abspath(os.path.join(__file__, "../../resources/cards_field.json"))
+FILEPATH_CARDs_DATA: str = os.path.abspath(os.path.join(__file__, "../../resources/cards_data.json"))
 
 
 CARDS_MESSAGES: namedtuple = namedtuple(

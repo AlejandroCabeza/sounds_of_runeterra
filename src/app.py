@@ -13,8 +13,8 @@ from config import (
     CARDS_MESSAGES_PLAYER_BATTLEFIELD,
     CARDS_MESSAGES_OPPONENT_BATTLEFIELD,
     CARDS_MESSAGES_OPPONENT_PLAYED,
-    CARDS_MESSAGES_OPPONENT_HAND
-)
+    CARDS_MESSAGES_OPPONENT_HAND,
+    FILEPATH_CARD_FIELDS, FILEPATH_CARDs_DATA, FILEPATH_GC_CRED)
 from data_structures import services as data_structure_services
 from api.services import get_game_state, get_player_names, get_game_result, get_screen_size
 from data_structures.states import GameState
@@ -29,7 +29,7 @@ class App:
 
     def __init__(self):
         self.event_loop = asyncio.get_event_loop()
-        self.cards_dictionary = create_cards_dictionary("../resources/cards_field.json", "../resources/cards_data.json")
+        self.cards_dictionary = create_cards_dictionary(FILEPATH_CARD_FIELDS, FILEPATH_CARDs_DATA)
         self.audio_player = AudioPlayer()
         self.input_manager = InputManager(self.event_loop)
         self.text_to_speech_client = TextToSpeechClient()
@@ -175,7 +175,7 @@ class App:
 if __name__ == '__main__':
     print("Loading Credentials")
     import os
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../cred.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = FILEPATH_GC_CRED
     print("Initialising required data")
     app = App()
     app.run()
