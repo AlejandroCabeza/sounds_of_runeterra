@@ -108,21 +108,22 @@ class App:
     async def get_player_names_as_text(self):
         players = await get_player_names()
         player_1, player_2 = players.values()
-        return f"{player_1} vs {player_2}."
+        return f"Match commencing! {player_1} vs {player_2}."
 
     async def play_scores(self):
         print("Playing scores")
-        text: str = f"Game result: {await self.get_game_result_as_text()}."
+        text: str = await self.get_game_result_as_text()
         audio = self.text_to_speech_client.transform_text_to_audio_as_bytes_io(text)
         await self.audio_player.add_audio_buffer(audio.getbuffer())
 
     async def get_game_result_as_text(self) -> str:
         game_result: dict = await get_game_result()
-        return (
+        player_win_text: str = (
             "You won!"
             if game_result.get("LocalPlayerWon") else
             "You lost."
         )
+        return f"The match is over! {player_win_text}"
 
     async def _stop(self):
         print("Closing")
