@@ -65,11 +65,11 @@ class App:
         await self.initialise_async_values()
         while not self.flag_stop:
             game_state: GameState = await get_game_state()
-            await self.parse_game_state(game_state)
+            await self.eval_game_state(game_state)
             await asyncio.sleep(1)
         await self._stop()
 
-    async def parse_game_state(self, game_state: GameState):
+    async def eval_game_state(self, game_state: GameState):
         print(f"Parsing Game State: {game_state}")
         if data_structure_services.is_game_state_in_progress(game_state):
             await self.game_state_in_progress_loop()
