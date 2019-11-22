@@ -4,6 +4,7 @@ from collections import namedtuple
 from google.cloud import texttospeech as tts
 # Project Imports
 
+
 VoiceRequestParams = namedtuple("VoiceRequest", ("synthesis_input", "voice_config", "audio_config"))
 
 

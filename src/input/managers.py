@@ -6,10 +6,11 @@ from pynput import keyboard, mouse
 from pynput.keyboard import Key
 # Project Imports
 
+
 class InputManager:
 
-    def __init__(self, event_loop):
-        self.event_loop : asyncio.AbstractEventLoop = event_loop
+    def __init__(self, asynchronous_event_loop):
+        self.event_loop: asyncio.AbstractEventLoop = asynchronous_event_loop
         self.lock = asyncio.locks.Lock()
         self.is_running = False
         self.mouse_listener = mouse.Listener(on_move=self._handle_mouse_move)
@@ -49,18 +50,18 @@ class InputManager:
                 self.mouse_listener.stop()
 
     def _handle_keyboard_press(self, key: Key):
-        async def handle_key(_key : Key, subscribers):
+        async def handle_key(_key: Key, subscribers):
             async with self.lock:
                 for subscriber in subscribers:
                     asyncio.run_coroutine_threadsafe(subscriber(_key), self.event_loop)
         asyncio.run_coroutine_threadsafe(handle_key(key, self._key_subscribed[key].values()), self.event_loop)
 
     def _handle_mouse_move(self, x, y):
-        async def handle_key(_x, _y ,subscribers):
+        async def handle_key(_x, _y, subscribers):
             async with self.lock:
                 for subscriber in subscribers:
                     asyncio.run_coroutine_threadsafe(subscriber(_x, _y), self.event_loop)
-        asyncio.run_coroutine_threadsafe(handle_key(x, y , self._mouse_subscribed), self.event_loop)
+        asyncio.run_coroutine_threadsafe(handle_key(x, y, self._mouse_subscribed), self.event_loop)
 
 
 if __name__ == '__main__':
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     async def print_it(*args):
         print(*(str(val) for val in args))
 
-    async def                              main():
+    async def main():
         await asyncio.sleep(10)
         await input_manager.stop()
 

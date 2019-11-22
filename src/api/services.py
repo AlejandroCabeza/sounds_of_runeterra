@@ -5,6 +5,7 @@ from api.clients.api_client import ApiClient
 from data_structures.rectangles import Rectangle
 from data_structures.states import GameState, ExpeditionState
 
+
 API_CLIENT: ApiClient = ApiClient()
 
 

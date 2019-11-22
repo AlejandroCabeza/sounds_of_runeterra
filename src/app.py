@@ -20,7 +20,7 @@ from api.services import get_game_state, get_player_names, get_game_result, get_
 from data_structures.states import GameState
 from input.managers import InputManager
 from text_to_speech.client import TextToSpeechClient
-from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis, get_fields_y_coords, Field
+from input.utils import transform_mouse_position_to_bottom_left_coordinate_axis, get_fields_y_coords, FieldZones
 from pynput.keyboard import Key
 from utils import generate_field_cards_message
 
@@ -36,15 +36,15 @@ class App:
         self.flag_stop: bool = False
         self.lock = asyncio.locks.Lock()
         self.use_verbose_mode: bool = True
-        self.fields_coords: {} = None
+        self.field_zone_coords: {} = None
         self.match_events: [] = [
             (Key.space, self.handle_mouse_over_card_event),
-            (Key.f1, self.generate_field_event(Field.PLAYER_HAND, CARDS_MESSAGES_PLAYER_HAND)),
-            (Key.f2, self.generate_field_event(Field.PLAYER_PLAYED, CARDS_MESSAGES_PLAYER_PLAYED)),
-            (Key.f3, self.generate_field_event(Field.PLAYER_BATTLEFIELD, CARDS_MESSAGES_PLAYER_BATTLEFIELD)),
-            (Key.f6, self.generate_field_event(Field.OPPONENT_HAND, CARDS_MESSAGES_OPPONENT_HAND)),
-            (Key.f5, self.generate_field_event(Field.OPPONENT_PLAYED, CARDS_MESSAGES_OPPONENT_PLAYED)),
-            (Key.f4, self.generate_field_event(Field.OPPONENT_BATTLEFIELD, CARDS_MESSAGES_OPPONENT_BATTLEFIELD)),
+            (Key.f1, self.generate_field_event(FieldZones.PLAYER_HAND, CARDS_MESSAGES_PLAYER_HAND)),
+            (Key.f2, self.generate_field_event(FieldZones.PLAYER_PLAYED, CARDS_MESSAGES_PLAYER_PLAYED)),
+            (Key.f3, self.generate_field_event(FieldZones.PLAYER_BATTLEFIELD, CARDS_MESSAGES_PLAYER_BATTLEFIELD)),
+            (Key.f6, self.generate_field_event(FieldZones.OPPONENT_HAND, CARDS_MESSAGES_OPPONENT_HAND)),
+            (Key.f5, self.generate_field_event(FieldZones.OPPONENT_PLAYED, CARDS_MESSAGES_OPPONENT_PLAYED)),
+            (Key.f4, self.generate_field_event(FieldZones.OPPONENT_BATTLEFIELD, CARDS_MESSAGES_OPPONENT_BATTLEFIELD)),
         ]
 
     def run(self):
@@ -56,9 +56,9 @@ class App:
         ))
 
     async def initialise_async_values(self):
-        if not self.fields_coords:
+        if not self.field_zone_coords:
             _, y_size = await get_screen_size()
-            self.fields_coords = get_fields_y_coords(y_size)
+            self.field_zone_coords = get_fields_y_coords(y_size)
         await self.input_manager.key_subscribe(Key.alt_r, self.handle_verbosity_level_switch_event)
 
     async def loop(self):
@@ -143,7 +143,7 @@ class App:
 
     def generate_field_event(self, field, message_formatter: CARDS_MESSAGES):
         async def handle_function(_: Key):
-            y_coord: int = self.fields_coords[field]
+            y_coord: int = self.field_zone_coords[field]
             cards_generator = await get_cards_in_field_by_y_coord(y_coord, self.cards_dictionary)
             message: str = generate_field_cards_message(message_formatter, list(cards_generator), self.use_verbose_mode)
             async with self.lock:
