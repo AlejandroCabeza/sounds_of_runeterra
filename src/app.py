@@ -29,7 +29,7 @@ class App:
 
     def __init__(self):
         self.event_loop = asyncio.get_event_loop()
-        self.cards_dictionary = create_cards_dictionary("../cards_field.json", "../cards_data.json")
+        self.cards_dictionary = create_cards_dictionary("../resources/cards_field.json", "../resources/cards_data.json")
         self.audio_player = AudioPlayer()
         self.input_manager = InputManager(self.event_loop)
         self.text_to_speech_client = TextToSpeechClient()

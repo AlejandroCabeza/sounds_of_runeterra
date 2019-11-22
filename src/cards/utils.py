@@ -28,6 +28,9 @@ def create_cards_dictionary(card_fields_filepath: str, cards_data_filepath: str)
 
 
 if __name__ == "__main__":
-    cards = list(create_cards_dictionary("../../cards_field.json", "../../cards_data.json").values())
+    cards = list(create_cards_dictionary(
+        "../../resources/cards_field.json",
+        "../../resources/cards_data.json"
+    ).values())
     print(cards[17].get_as_string(verbose=False))
     print(cards[17].get_as_string(verbose=True))
